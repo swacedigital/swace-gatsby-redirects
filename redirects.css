@@ -1,0 +1,24 @@
+.redirect {
+  display: flex;
+}
+
+.redirect-header {
+  display: flex;
+}
+
+.redirect input {
+  margin-right: 5px;
+  width: 400px;
+}
+
+.redirect-wrapper form {
+  margin-top: 20px;
+}
+
+.to {
+  margin-left: 360px;
+}
+
+.remove {
+  cursor: pointer;
+}
