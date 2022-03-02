@@ -14,7 +14,7 @@ Plugin URI: https://swace.se
  
 Description: A plugin for adding redirects that get picked up by gatsby on build.
  
-Version: 1.0.0
+Version: 1.0.1
  
 Author: Adam Elvander
  
@@ -26,9 +26,38 @@ Text Domain: swace
  
 */
 
+function get_options_table() {
+	global $wpdb;
+	return $wpdb->prefix . "options";
+}
+
+function save_db_backup($redirects) {
+	global $wpdb;
+	$wp_options = get_options_table();
+	$sql = <<<SQL
+		SELECT option_id FROM {$wp_options} WHERE option_name = 'redirects'
+	SQL;
+	$res = $wpdb->get_results($wpdb->prepare($sql));
+	$id = isset($res[0]) && isset($res[0]->option_id) ? $res[0]->option_id : null;
+	if($id) {
+		$sql = <<<SQL
+			REPLACE INTO {$wp_options} (option_id, option_name, option_value, autoload)
+			VALUES (%s, "redirects", %s, "no")
+		SQL;
+		$wpdb->query($wpdb->prepare($sql, $id, $redirects));
+	} else {
+		$sql = <<<SQL
+			INSERT INTO {$wp_options} (option_name, option_value, autoload)
+			VALUES ("redirects", %s, "no")
+		SQL;
+		$wpdb->query($wpdb->prepare($sql, $redirects));
+	}
+	return $result;
+}
+
 function redirect_page_content() {
-  $filePath = get_redirects_file_path();
-  if($_POST && isset($_POST['fromPath-0'])) {
+	$filePath = get_redirects_file_path();
+  if($_POST && count($_POST) > 0) {
       $redirects = [];
       $pair = [];
       foreach($_POST as $i => $path) {
@@ -39,8 +68,10 @@ function redirect_page_content() {
           }
       }
       $fp = fopen($filePath, 'w');
-      fwrite($fp, json_encode($redirects, JSON_UNESCAPED_SLASHES));
+			$json = json_encode($redirects, JSON_UNESCAPED_SLASHES);
+      fwrite($fp, $json);
       fclose($fp);
+			save_db_backup($json);
       $webhook = Settings::prefix_get_option( 'builds_api_webhook', 'wpgatsby_settings', false );
       $args = apply_filters( 'gatsby_trigger_dispatch_args', [], $webhook );
       wp_safe_remote_post(
