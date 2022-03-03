@@ -1,5 +1,21 @@
 .redirect {
+  display: inline-flex;
+  align-items: center;
+}
+
+.redirect span {
   display: flex;
+}
+
+.redirect-info span {
+  color: darkgreen;
+  font-weight: bold;
+}
+
+.imported {
+  padding: 4px;
+  border-radius: 4px;
+  border: 2px solid darkgreen;
 }
 
 .redirect-header {
