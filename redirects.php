@@ -144,12 +144,12 @@ function redirect_page_content() {
                               </li>
                               <?php
                           }
-											?>
+					  					?>
                   </ul>
               </form>
           </div>
-			</div>
-			<p><?php echo $error_text ?></p>
+      </div>
+		<p><?php echo $error_text ?></p>
   <?php
 }
 
