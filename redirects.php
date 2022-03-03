@@ -1,5 +1,7 @@
 <?php
+
 use WPGatsby\Admin\Settings;
+
 /**
  
 * @package Swace
@@ -58,29 +60,29 @@ function save_db_backup($redirects) {
 function redirect_page_content() {
 	$filePath = get_redirects_file_path();
   if($_POST && count($_POST) > 0) {
-      $redirects = [];
-      $pair = [];
-      foreach($_POST as $i => $path) {
-          if(strpos($i, 'fromPath') === 0) { $pair['fromPath'] = $_POST[$i]; }
-          if(strpos($i, 'toPath') === 0) {
-              $pair['toPath'] = $_POST[$i];
-              $redirects[] = $pair;
-          }
+    $redirects = [];
+    $pair = [];
+    foreach($_POST as $i => $path) {
+      if(strpos($i, 'fromPath') === 0) { $pair['fromPath'] = $_POST[$i]; }
+      if(strpos($i, 'toPath') === 0) {
+        $pair['toPath'] = $_POST[$i];
+        $redirects[] = $pair;
       }
-      $fp = fopen($filePath, 'w');
-			$json = json_encode($redirects, JSON_UNESCAPED_SLASHES);
-      fwrite($fp, $json);
-      fclose($fp);
-			save_db_backup($json);
-      $webhook = Settings::prefix_get_option( 'builds_api_webhook', 'wpgatsby_settings', false );
-      $args = apply_filters( 'gatsby_trigger_dispatch_args', [], $webhook );
-      wp_safe_remote_post(
-          $webhook,
-          ['headers' => [
-              'Content-Type'  => 'application/json',
-              'User-Agent' => 'CMS'
-          ]]
-      );
+    }
+    $fp = fopen($filePath, 'w');
+    $json = json_encode($redirects, JSON_UNESCAPED_SLASHES);
+    fwrite($fp, $json);
+    fclose($fp);
+    save_db_backup($json);
+    $webhook = Settings::prefix_get_option( 'builds_api_webhook', 'wpgatsby_settings', false );
+    $args = apply_filters( 'gatsby_trigger_dispatch_args', [], $webhook );
+    wp_safe_remote_post(
+      $webhook,
+      ['headers' => [
+          'Content-Type'  => 'application/json',
+          'User-Agent' => 'CMS'
+      ]]
+    );
   }
 
   $string = file_get_contents($filePath);
@@ -113,6 +115,10 @@ function redirect_page_content() {
   <?php
 }
 
+function get_redirects_file_path() {
+  return ABSPATH."/redirects.json";
+}
+
 function load_custom_wp_admin_scripts($hook) {
   if( $hook != 'toplevel_page_redirects' ) {
     return;
@@ -121,10 +127,6 @@ function load_custom_wp_admin_scripts($hook) {
   wp_enqueue_script( 'redirects', plugin_dir_url( __FILE__ ). '/redirects.js', array( 'jquery' ) );
 }
 add_action( 'admin_enqueue_scripts', 'load_custom_wp_admin_scripts' );
-
-function get_redirects_file_path() {
-  return ABSPATH."/redirects.json";
-}
 
 function add_menu_item() {
   add_menu_page(
