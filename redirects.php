@@ -16,7 +16,7 @@ Plugin URI: https://swace.se
  
 Description: A plugin for adding redirects that get picked up by gatsby on build.
  
-Version: 1.0.1
+Version: 1.0.2
  
 Author: Adam Elvander
  
@@ -58,6 +58,7 @@ function save_db_backup($redirects) {
 }
 
 function redirect_page_content() {
+  $error_text = "";
   $filePath = get_redirects_file_path();
   if($_POST && count($_POST) > 0) {
     $redirects = [];
@@ -66,6 +67,11 @@ function redirect_page_content() {
       if(strpos($i, 'fromPath') === 0) { $pair['fromPath'] = $_POST[$i]; }
       if(strpos($i, 'toPath') === 0) {
         $pair['toPath'] = $_POST[$i];
+        $error = is_faulty_redirect($pair['fromPath'], $pair['toPath'], $redirects);
+        if ($error) {
+          $error_text .= $error;
+          continue;
+        }
         $redirects[] = $pair;
       }
     }
@@ -87,6 +93,33 @@ function redirect_page_content() {
 
   $string = file_get_contents($filePath);
   $json = json_decode($string, true);
+  
+  $redirect_file = $_FILES["redirect-file-input"];
+  if ($redirect_file) {
+    $tmpName = $redirect_file['tmp_name'];
+    $csvArray = array_map(str_getcsv, file($tmpName));
+  
+    
+    foreach($csvArray as $i => $csvRow) {
+      $valuePair = explode(";", $csvRow[0]);
+      $fromPath = $valuePair[0];
+      $toPath = $valuePair[1];
+  
+      $error = is_faulty_redirect($fromPath, $toPath, $json);
+  
+      if ($error) {
+        $error_text .= $error;
+        continue;
+      }
+  
+      $validPair = array(
+        'fromPath'  => $fromPath,
+        'toPath'  => $toPath,
+      );
+      array_push($json, $validPair);
+    }
+  }
+	
   ?>
       <div>
           <h1>
@@ -94,8 +127,10 @@ function redirect_page_content() {
           </h1>
           <div class="redirect-wrapper">
               <button class="add" id="addButton">Add new redirect</button>
-              <form method="post">
-                  <input type="submit" value="Save Redirects"/>
+              <form method="post" enctype="multipart/form-data">
+                <input type="hidden" name="MAX_FILE_SIZE" value="30000" />
+                <input type="file" name="redirect-file-input" id="redirect-file-input" accept=".csv">
+                  <input type="submit" value="Submit"/>
                   <ul id="redirectList">
                       <li class="redirect-header"><h3>FROM</h3><h3 class="to">TO</h3></li>
                       <?php
@@ -107,16 +142,36 @@ function redirect_page_content() {
                               </li>
                               <?php
                           }
-                      ?>
+											?>
                   </ul>
               </form>
           </div>
-      </div>
+			</div>
+			<p><?php echo $error_text ?></p>
   <?php
 }
 
+
 function get_redirects_file_path() {
   return ABSPATH."/redirects.json";
+}
+
+function is_faulty_redirect($fromPath, $toPath, $redirects) {
+	if ((empty($fromPath) || empty($toPath))) {
+		return ("<br><br>Missing value in pair - from: " . $fromPath . " to: " . $toPath);
+	}
+
+	foreach ($redirects as $redirect) {
+		if ($redirect['fromPath'] === $fromPath) {
+			return ("<br><br>Pair with from: " . $fromPath . " to: " . $toPath . " already has redirect to " . $redirect['toPath']);
+		}
+
+		if ($redirect['fromPath'] === $toPath && $redirect['toPath'] === $fromPath) {
+			return ("<br><br>Potential loop - Pair with from: " . $fromPath . " to: " . $toPath . " already has redirect in opposite direction");
+		}
+	}
+
+	return "";
 }
 
 function load_custom_wp_admin_scripts($hook) {
@@ -135,7 +190,7 @@ function add_menu_item() {
     'edit_theme_options',
     'redirects.php',
     'redirect_page_content',
-    'dashicons-links',
+    'dashicons-admin-links',
     69
   );
 }
