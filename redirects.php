@@ -128,16 +128,23 @@ function redirect_page_content()
 
   ?>
   <div>
-    <h1>
-      Manage Redirects
-    </h1>
-    <div class="redirect-wrapper">
-      <button class="add" id="addButton">Add new redirect</button>
-      <form method="post" enctype="multipart/form-data">
-        <input type="hidden" name="MAX_FILE_SIZE" value="30000" />
-        <input type="file" name="redirect-file-input" id="redirect-file-input" accept=".csv">
-        <p class="redirect-info"><span>Redirects imported by file</span> must be submitted again in order to the stored correctly</p>
-        <input type="submit" value="Submit" />
+    <form method="post" enctype="multipart/form-data">
+      <div class="form-header">
+        <h1>
+          Manage Redirects
+        </h1>
+        <input type="submit" value="Save" />
+      </div>
+      <div class="redirect-wrapper">
+        <div class="controls-wrapper">
+          <button class="add" id="addButton">Add new redirect</button>
+          <input type="hidden" name="MAX_FILE_SIZE" value="30000" />
+          <div class="file-upload-wrapper">
+            <label for="redirect-file-input">Upload csv</label>
+            <input type="file" name="redirect-file-input" id="redirect-file-input" accept=".csv">
+          </div>
+        </div>
+        <p class="redirect-info"><span>Redirects imported by file</span> must be submitted again in order get stored correctly</p>
         <ul id="redirectList">
           <li class="redirect-header">
             <h3>FROM</h3>
@@ -154,8 +161,8 @@ function redirect_page_content()
             }
             ?>
         </ul>
-      </form>
-    </div>
+      </div>
+    </form>
   </div>
   <p><?php echo $error_text ?></p>
 <?php

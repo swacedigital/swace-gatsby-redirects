@@ -38,3 +38,26 @@
 .remove {
   cursor: pointer;
 }
+
+.file-upload-wrapper > label {
+  display: block;
+}
+
+.file-upload-wrapper {
+  margin-left: 20px;
+  display: inline-block;
+}
+
+button {
+  cursor: pointer;
+}
+
+.form-header {
+  display: flex;
+}
+
+.form-header > input {
+  height: 30px;
+  margin: 12px;
+  cursor: pointer;
+}
