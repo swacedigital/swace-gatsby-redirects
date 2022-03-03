@@ -114,7 +114,8 @@ function redirect_page_content() {
   
       $validPair = array(
         'fromPath'  => $fromPath,
-        'toPath'  => $toPath,
+        'toPath'    => $toPath,
+        'fromFile'  => true
       );
       array_push($json, $validPair);
     }
@@ -130,13 +131,14 @@ function redirect_page_content() {
               <form method="post" enctype="multipart/form-data">
                 <input type="hidden" name="MAX_FILE_SIZE" value="30000" />
                 <input type="file" name="redirect-file-input" id="redirect-file-input" accept=".csv">
+                <p class="redirect-info"><span>Redirects imported by file</span> must be submitted again in order to the stored correctly</p>
                   <input type="submit" value="Submit"/>
                   <ul id="redirectList">
                       <li class="redirect-header"><h3>FROM</h3><h3 class="to">TO</h3></li>
                       <?php
                           foreach($json as $i => $link) {
                               ?>
-                              <li class="redirect">
+                              <li class="redirect <?= !empty($link['fromFile']) ? "imported" : "" ?>">
                                   <input value="<?php echo $link["fromPath"]?>" name="fromPath-<?php echo $i ?>"><input value="<?php echo $link["toPath"]?>" name="toPath-<?php echo $i ?>">
                                   <span class="remove">❌</span>
                               </li>
