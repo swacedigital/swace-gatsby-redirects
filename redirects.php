@@ -29,32 +29,32 @@ Text Domain: swace
 */
 
 function get_options_table() {
-	global $wpdb;
-	return $wpdb->prefix . "options";
+  global $wpdb;
+  return $wpdb->prefix . "options";
 }
 
 function save_db_backup($redirects) {
-	global $wpdb;
-	$wp_options = get_options_table();
-	$sql = <<<SQL
-		SELECT option_id FROM {$wp_options} WHERE option_name = 'redirects'
-	SQL;
-	$res = $wpdb->get_results($wpdb->prepare($sql));
-	$id = isset($res[0]) && isset($res[0]->option_id) ? $res[0]->option_id : null;
-	if($id) {
-		$sql = <<<SQL
-			REPLACE INTO {$wp_options} (option_id, option_name, option_value, autoload)
-			VALUES (%s, "redirects", %s, "no")
-		SQL;
-		$wpdb->query($wpdb->prepare($sql, $id, $redirects));
-	} else {
-		$sql = <<<SQL
-			INSERT INTO {$wp_options} (option_name, option_value, autoload)
-			VALUES ("redirects", %s, "no")
-		SQL;
-		$wpdb->query($wpdb->prepare($sql, $redirects));
-	}
-	return $result;
+  global $wpdb;
+  $wp_options = get_options_table();
+  $sql = <<<SQL
+    SELECT option_id FROM {$wp_options} WHERE option_name = 'redirects'
+  SQL;
+  $res = $wpdb->get_results($wpdb->prepare($sql));
+  $id = isset($res[0]) && isset($res[0]->option_id) ? $res[0]->option_id : null;
+  if($id) {
+    $sql = <<<SQL
+      REPLACE INTO {$wp_options} (option_id, option_name, option_value, autoload)
+      VALUES (%s, "redirects", %s, "no")
+    SQL;
+    $wpdb->query($wpdb->prepare($sql, $id, $redirects));
+  } else {
+    $sql = <<<SQL
+      INSERT INTO {$wp_options} (option_name, option_value, autoload)
+      VALUES ("redirects", %s, "no")
+    SQL;
+    $wpdb->query($wpdb->prepare($sql, $redirects));
+  }
+  return $result;
 }
 
 function redirect_page_content() {
