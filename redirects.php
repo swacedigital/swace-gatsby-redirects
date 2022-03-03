@@ -58,7 +58,7 @@ function save_db_backup($redirects) {
 }
 
 function redirect_page_content() {
-	$filePath = get_redirects_file_path();
+  $filePath = get_redirects_file_path();
   if($_POST && count($_POST) > 0) {
     $redirects = [];
     $pair = [];
