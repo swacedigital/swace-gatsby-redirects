@@ -137,7 +137,7 @@ function redirect_page_content()
       </div>
       <div class="redirect-wrapper">
         <div class="controls-wrapper">
-          <button class="add" id="addButton">Add new redirect</button>
+          <button type="button" class="add" id="addButton">Add new redirect</button>
           <input type="hidden" name="MAX_FILE_SIZE" value="30000" />
           <div class="file-upload-wrapper">
             <label for="redirect-file-input">Upload csv</label>
