@@ -14,5 +14,7 @@ This plugin requires a companion npm package called gatsby-swace-redirects. It a
 
 Clone the contents of this repository to your WordPress plugins folder and activate the plugin via the installed plugins page.
 
+Please note that this plugin requires the web server user to have write access to the wordpress folder in order to store the redirects-file.
+
 ## License
 [GPL-3.0](LICENSE)
