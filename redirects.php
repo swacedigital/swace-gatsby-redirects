@@ -179,23 +179,17 @@ function is_faulty_redirect($fromPath, $toPath, $redirects)
   if ((empty($fromPath) || empty($toPath))) {
     return ("<br><br>Missing value in pair - from: " . $fromPath . " to: " . $toPath);
   }
-  
-  $trimmed_fromPath = rtrim($fromPath, "/");
-  $trimmed_toPath = rtrim($toPath, "/");
 
-  if ($trimmed_fromPath === $trimmed_toPath) {
+  if ($fromPath === $toPath) {
     return ("<br><br>Potential loop - Pair: " . $fromPath . " to: " . $toPath . " attempts to redirect to same page");
   }
 
   foreach ($redirects as $redirect) {
-    $trimmed_redirect_fromPath = rtrim($redirect['fromPath'], "/");
-    $trimmed_redirect_toPath = rtrim($redirect['toPath'], "/");
-
-    if ($trimmed_redirect_fromPath === $trimmed_fromPath) {
+    if ($redirect['fromPath'] === $fromPath) {
       return ("<br><br>Pair with from: " . $fromPath . " to: " . $toPath . " already has redirect to " . $redirect['toPath']);
     }
 
-    if ($trimmed_redirect_fromPath === $trimmed_toPath && $trimmed_redirect_toPath === $trimmed_fromPath) {
+    if ($redirect['fromPath'] === $toPath && $redirect['toPath'] === $fromPath) {
       return ("<br><br>Potential loop - Pair with from: " . $fromPath . " to: " . $toPath . " already has redirect in opposite direction");
     }
   }
