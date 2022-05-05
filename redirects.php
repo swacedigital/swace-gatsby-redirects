@@ -36,10 +36,8 @@ function save_db_backup($redirects)
 {
   global $wpdb;
   $wp_options = get_options_table();
-  $sql = <<<SQL
-    SELECT option_id FROM {$wp_options} WHERE option_name = 'redirects'
-  SQL;
-  $res = $wpdb->get_results($wpdb->prepare($sql));
+  $query = $wpdb->prepare("SELECT option_id FROM {$wp_options} WHERE option_name = %s", array( 'redirects' ));
+  $res = $wpdb->get_results($query);
   $id = isset($res[0]) && isset($res[0]->option_id) ? $res[0]->option_id : null;
   if ($id) {
     $sql = <<<SQL
@@ -54,7 +52,7 @@ function save_db_backup($redirects)
     SQL;
     $wpdb->query($wpdb->prepare($sql, $redirects));
   }
-  return $result;
+  return $res;
 }
 
 function redirect_page_content()
@@ -97,30 +95,34 @@ function redirect_page_content()
   $string = file_get_contents($filePath);
   $json = json_decode($string, true);
 
-  $redirect_file = $_FILES["redirect-file-input"];
-  if ($redirect_file) {
-    $tmpName = $redirect_file['tmp_name'];
-    $csvArray = array_map(str_getcsv, file($tmpName));
-
-
-    foreach ($csvArray as $i => $csvRow) {
-      $valuePair = explode(";", $csvRow[0]);
-      $fromPath = $valuePair[0];
-      $toPath = $valuePair[1];
-
-      $error = is_faulty_redirect($fromPath, $toPath, $json);
-
-      if ($error) {
-        $error_text .= $error;
-        continue;
+  if ($_FILES && $_FILES["redirect-file-input"] && $_FILES["redirect-file-input"]['size']  && $_FILES['redirect-file-input']['error'] == 0) {
+    $redirect_file = $_FILES["redirect-file-input"];
+    if ($redirect_file) {
+      $tmpName = $redirect_file['tmp_name'];
+      $csvArray = array_map(str_getcsv, file($tmpName));
+  
+  
+      if($csvArray) {
+        foreach ($csvArray as $i => $csvRow) {
+          $valuePair = explode(";", $csvRow[0]);
+          $fromPath = $valuePair[0];
+          $toPath = $valuePair[1];
+    
+          $error = is_faulty_redirect($fromPath, $toPath, $json);
+    
+          if ($error) {
+            $error_text .= $error;
+            continue;
+          }
+    
+          $validPair = array(
+            'fromPath'  => $fromPath,
+            'toPath'    => $toPath,
+            'fromFile'  => true
+          );
+          array_push($json, $validPair);
+        }
       }
-
-      $validPair = array(
-        'fromPath'  => $fromPath,
-        'toPath'    => $toPath,
-        'fromFile'  => true
-      );
-      array_push($json, $validPair);
     }
   }
 
@@ -177,13 +179,23 @@ function is_faulty_redirect($fromPath, $toPath, $redirects)
   if ((empty($fromPath) || empty($toPath))) {
     return ("<br><br>Missing value in pair - from: " . $fromPath . " to: " . $toPath);
   }
+  
+  $trimmed_fromPath = rtrim($fromPath, "/");
+  $trimmed_toPath = rtrim($toPath, "/");
+
+  if ($trimmed_fromPath === $trimmed_toPath) {
+    return ("<br><br>Potential loop - Pair: " . $fromPath . " to: " . $toPath . " attempts to redirect to same page");
+  }
 
   foreach ($redirects as $redirect) {
-    if ($redirect['fromPath'] === $fromPath) {
+    $trimmed_redirect_fromPath = rtrim($redirect['fromPath'], "/");
+    $trimmed_redirect_toPath = rtrim($redirect['toPath'], "/");
+
+    if ($trimmed_redirect_fromPath === $trimmed_fromPath) {
       return ("<br><br>Pair with from: " . $fromPath . " to: " . $toPath . " already has redirect to " . $redirect['toPath']);
     }
 
-    if ($redirect['fromPath'] === $toPath && $redirect['toPath'] === $fromPath) {
+    if ($trimmed_redirect_fromPath === $trimmed_toPath && $trimmed_redirect_toPath === $trimmed_fromPath) {
       return ("<br><br>Potential loop - Pair with from: " . $fromPath . " to: " . $toPath . " already has redirect in opposite direction");
     }
   }
@@ -191,7 +203,7 @@ function is_faulty_redirect($fromPath, $toPath, $redirects)
   return "";
 }
 
-function load_custom_wp_admin_scripts($hook)
+function load_redirects_wp_admin_scripts($hook)
 {
   if ($hook != 'toplevel_page_redirects') {
     return;
@@ -199,9 +211,9 @@ function load_custom_wp_admin_scripts($hook)
   wp_enqueue_style('custom_wp_admin_css', plugin_dir_url(__FILE__) . '/redirects.css');
   wp_enqueue_script('redirects', plugin_dir_url(__FILE__) . '/redirects.js', array('jquery'));
 }
-add_action('admin_enqueue_scripts', 'load_custom_wp_admin_scripts');
+add_action('admin_enqueue_scripts', 'load_redirects_wp_admin_scripts');
 
-function add_menu_item()
+function add_redirects_menu_item()
 {
   add_menu_page(
     'Redirects',
@@ -213,4 +225,4 @@ function add_menu_item()
     69
   );
 }
-add_action('admin_menu', 'add_menu_item');
+add_action('admin_menu', 'add_redirects_menu_item');
