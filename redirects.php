@@ -202,7 +202,7 @@ function load_redirects_wp_admin_scripts($hook)
   if ($hook != 'toplevel_page_redirects') {
     return;
   }
-  wp_enqueue_style('custom_wp_admin_css', plugin_dir_url(__FILE__) . '/redirects.css');
+  wp_enqueue_style('redirects_wp_admin_css', plugin_dir_url(__FILE__) . '/redirects.css');
   wp_enqueue_script('redirects', plugin_dir_url(__FILE__) . '/redirects.js', array('jquery'));
 }
 add_action('admin_enqueue_scripts', 'load_redirects_wp_admin_scripts');
