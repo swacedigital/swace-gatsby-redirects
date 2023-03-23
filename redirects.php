@@ -100,7 +100,7 @@ function redirect_page_content()
   $redirect_file = $_FILES["redirect-file-input"];
   if ($redirect_file) {
     $tmpName = $redirect_file['tmp_name'];
-    $csvArray = array_map(str_getcsv, file($tmpName));
+    $csvArray = array_map('str_getcsv', file($tmpName));
 
 
     foreach ($csvArray as $i => $csvRow) {
