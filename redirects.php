@@ -16,7 +16,7 @@ Plugin URI: https://swace.se
  
 Description: A plugin for adding redirects that get picked up by gatsby on build.
  
-Version: 1.0.3
+Version: 1.0.4
  
 Author: Adam Elvander, Johan Isaksson
  
