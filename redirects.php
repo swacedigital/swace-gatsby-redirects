@@ -16,7 +16,7 @@ Plugin URI: https://swace.se
  
 Description: A plugin for adding redirects that get picked up by gatsby on build.
  
-Version: 1.0.4
+Version: 1.0.5
  
 Author: Adam Elvander, Johan Isaksson
  
@@ -53,6 +53,36 @@ function save_db_backup($redirects)
     $wpdb->query($wpdb->prepare($sql, $redirects));
   }
   return $res;
+}
+
+/**
+ * Used to programmatically add a redirect
+ */
+function add_redirect($fromPath, $toPath) 
+{
+  $filePath = get_redirects_file_path();
+  $string = file_get_contents($filePath);
+  $json = json_decode($string, true);
+
+  $faulty = is_faulty_redirect($fromPath, $toPath, $json);
+  if ($faulty) {
+    return false;
+  }
+
+  $pair = array(
+    'fromPath' => $fromPath,
+    'toPath' => $toPath
+  );
+  
+  $json[] = $pair;
+  
+  $fp = fopen($filePath, 'w');
+  fwrite($fp, json_encode($json, JSON_UNESCAPED_SLASHES));
+  fclose($fp);
+  
+  save_db_backup($json);
+  
+  return true;
 }
 
 function redirect_page_content()
